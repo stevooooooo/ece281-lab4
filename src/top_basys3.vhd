@@ -29,6 +29,8 @@ architecture top_basys3_arch of top_basys3 is
     signal w_floor : std_logic_vector(3 downto 0);
     signal w_reset1 : std_logic;
     signal w_reset2 : std_logic;
+    signal w_floorTDM1 : std_logic_vector(3 downto 0);
+    signal w_floorTDM2 : std_logic_vector(3 downto 0);
   
 	-- component declarations
     component sevenseg_decoder is
@@ -53,7 +55,7 @@ architecture top_basys3_arch of top_basys3 is
         Port ( i_clk		: in  STD_LOGIC;
            i_reset		: in  STD_LOGIC; -- asynchronous
            i_D3 		: in  STD_LOGIC_VECTOR (k_WIDTH - 1 downto 0);
-		   i_D2 		: in  STD_LOGIC_VECTOR (k_WIDTH - 1 downto 0);
+	   	   i_D2 		: in  STD_LOGIC_VECTOR (k_WIDTH - 1 downto 0);
 		   i_D1 		: in  STD_LOGIC_VECTOR (k_WIDTH - 1 downto 0);
 		   i_D0 		: in  STD_LOGIC_VECTOR (k_WIDTH - 1 downto 0);
 		   o_data		: out STD_LOGIC_VECTOR (k_WIDTH - 1 downto 0);
@@ -73,13 +75,36 @@ architecture top_basys3_arch of top_basys3 is
 	
 begin
 	-- PORT MAPS ----------------------------------------
+    TDM4_inst: TDM4
+    port map (
+        i_reset => w_reset1,
+        i_clk => w_clk,
+        i_D0 => w_floorTDM1,
+        i_D1 => "1000111",
+        i_D2 => w_floorTDM2,
+        i_D3 => "1000111",
+        o_data => w_floor,
+        o_sel => an
+    );
+        
+
+    
     elevator_controller_inst: elevator_controller_fsm
     port map (
         i_clk => w_clk,
         i_Reset => w_reset2,
         go_up_down => sw(1),
         is_stopped => sw(0),
-        o_floor => w_floor
+        o_floor => w_floorTDM1
+    );   	
+    
+    elevator_controller_inst2: elevator_controller_fsm
+    port map (
+        i_clk => w_clk,
+        i_Reset => w_reset2,
+        go_up_down => sw(1),
+        is_stopped => sw(0),
+        o_floor => w_floorTDM2
     );   	
     
     sevenseg_decoder_inst: sevenseg_decoder 
@@ -87,8 +112,6 @@ begin
         i_Hex => w_floor,
         o_seg_n => seg
     );
-	
-	an(0) <= '0';
 	
 			clkdiv_inst : clock_divider 		--instantiation of clock_divider to take 
         generic map ( k_DIV => 25000000 ) -- 1 Hz clock from 100 MHz
@@ -101,6 +124,7 @@ begin
 	
 	-- LED 15 gets the FSM slow clock signal. The rest are grounded.
 	led(15) <= w_clk;
+
 	
 	-- leave unused switches UNCONNECTED. Ignore any warnings this causes.
 	
