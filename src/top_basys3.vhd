@@ -79,7 +79,7 @@ begin
     TDM4_inst: TDM4
     port map (
         i_reset => w_reset1,
-        i_clk => clk,
+        i_clk => w_clk2,
         i_D0 => w_floorTDM1,
         i_D1 => x"F",
         i_D2 => w_floorTDM2,
@@ -103,8 +103,8 @@ begin
     port map (
         i_clk => w_clk1,
         i_Reset => w_reset2,
-        go_up_down => sw(4),
-        is_stopped => sw(3),
+        go_up_down => sw(3),
+        is_stopped => sw(2),
         o_floor => w_floorTDM2
     );   	
     
@@ -121,7 +121,13 @@ begin
             i_reset =>  w_reset1,
             o_clk   => w_clk1
         );  
-
+			clkdiv_inst2 : clock_divider 		--instantiation of clock_divider to take 
+        generic map ( k_DIV => 416666) -- 240 Hz (60 Hz per panel) clock from 100 MHz
+        port map (						  
+            i_clk   => clk,
+            i_reset =>  w_reset1,
+            o_clk   => w_clk2
+        );  
 	-- CONCURRENT STATEMENTS ----------------------------
 	
 	-- LED 15 gets the FSM slow clock signal. The rest are grounded.
