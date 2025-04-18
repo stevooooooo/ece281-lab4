@@ -25,7 +25,8 @@ end top_basys3;
 architecture top_basys3_arch of top_basys3 is
 
     -- signal declarations
- 	signal w_clk : std_logic; 
+ 	signal w_clk1 : std_logic; 
+ 	signal w_clk2 : std_logic; 
     signal w_floor : std_logic_vector(3 downto 0);
     signal w_reset1 : std_logic;
     signal w_reset2 : std_logic;
@@ -78,11 +79,11 @@ begin
     TDM4_inst: TDM4
     port map (
         i_reset => w_reset1,
-        i_clk => w_clk,
+        i_clk => clk,
         i_D0 => w_floorTDM1,
-        i_D1 => "1000111",
+        i_D1 => x"F",
         i_D2 => w_floorTDM2,
-        i_D3 => "1000111",
+        i_D3 => x"F",
         o_data => w_floor,
         o_sel => an
     );
@@ -91,7 +92,7 @@ begin
     
     elevator_controller_inst: elevator_controller_fsm
     port map (
-        i_clk => w_clk,
+        i_clk => w_clk1,
         i_Reset => w_reset2,
         go_up_down => sw(1),
         is_stopped => sw(0),
@@ -100,7 +101,7 @@ begin
     
     elevator_controller_inst2: elevator_controller_fsm
     port map (
-        i_clk => w_clk,
+        i_clk => w_clk1,
         i_Reset => w_reset2,
         go_up_down => sw(4),
         is_stopped => sw(3),
@@ -113,17 +114,18 @@ begin
         o_seg_n => seg
     );
 	
-			clkdiv_inst : clock_divider 		--instantiation of clock_divider to take 
-        generic map ( k_DIV => 25000000 ) -- 1 Hz clock from 100 MHz
+			clkdiv_inst1 : clock_divider 		--instantiation of clock_divider to take 
+        generic map ( k_DIV => 50000000 ) -- 0.5 Hz clock from 100 MHz
         port map (						  
             i_clk   => clk,
             i_reset =>  w_reset1,
-            o_clk   => w_clk
+            o_clk   => w_clk1
         );  
+
 	-- CONCURRENT STATEMENTS ----------------------------
 	
 	-- LED 15 gets the FSM slow clock signal. The rest are grounded.
-	led(15) <= w_clk;
+	led(15) <= w_clk1;
 
 	
 	-- leave unused switches UNCONNECTED. Ignore any warnings this causes.
