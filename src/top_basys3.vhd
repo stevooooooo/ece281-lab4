@@ -102,8 +102,8 @@ begin
     port map (
         i_clk => w_clk,
         i_Reset => w_reset2,
-        go_up_down => sw(1),
-        is_stopped => sw(0),
+        go_up_down => sw(4),
+        is_stopped => sw(3),
         o_floor => w_floorTDM2
     );   	
     
